@@ -6,50 +6,60 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.By;
+import java.time.Duration;
 import ru.yandex.samokat.config.WebDriverConfig;
-import ru.yandex.samokat.pages.MainPage;
 import ru.yandex.samokat.pages.OrderPage;
+import ru.yandex.samokat.pages.MainPage;
+
 import java.util.Arrays;
 import java.util.Collection;
+
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class OrderTest {
     private WebDriver driver;
-    private MainPage mainPage;
     private OrderPage orderPage;
+    private MainPage mainPage;
 
-    private final String orderButtonType;
-    private final String name;
-    private final String surname;
+    private final String firstName;
+    private final String lastName;
     private final String address;
-    private final String metroStation;
+    private final String metro;
     private final String phone;
     private final String date;
     private final String rentalPeriod;
     private final String color;
     private final String comment;
 
-    public OrderTest(String orderButtonType, String name, String surname, String address,
-                     String metroStation, String phone, String date, String rentalPeriod,
-                     String color, String comment) {
-        this.orderButtonType = orderButtonType;
-        this.name = name;
-        this.surname = surname;
+    private final boolean useTopButton;
+
+    public OrderTest(String firstName, String lastName, String address,
+                     String metro, String phone, String date,
+                     String rentalPeriod, String color, String comment,
+                     boolean useTopButton) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.address = address;
-        this.metroStation = metroStation;
+        this.metro = metro;
         this.phone = phone;
         this.date = date;
         this.rentalPeriod = rentalPeriod;
         this.color = color;
         this.comment = comment;
+        this.useTopButton = useTopButton;
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "Заказ: {0} {1} (кнопка: {9})")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {"top", "Иван", "Петров", "ул. Ленина, д. 1", "Сокольники", "89123456789", "15.12.2024", "трое суток", "black", "Тестовый комментарий"},
-                {"bottom", "Мария", "Сидорова", "пр. Мира, д. 25", "Черкизовская", "89987654321", "20.12.2024", "сутки", "grey", "Оставить у двери"}
+                  {"Иван", "Иванов", "ул. Ленина, 1", "Сокольники", "+79991234567",
+                        "15.12.2024", "сутки", "black", "Позвонить за час", true},
+                {"Мария", "Петрова", "пр. Мира, 25", "Черкизовская", "+79997654321",
+                        "20.12.2024", "двое суток", "grey", "Оставить у двери", false}
         });
     }
 
@@ -58,26 +68,43 @@ public class OrderTest {
         driver = WebDriverConfig.getDriver();
         mainPage = new MainPage(driver);
         orderPage = new OrderPage(driver);
+
         mainPage.open();
     }
 
     @Test
-    public void testOrderScooter() {
-        if ("top".equals(orderButtonType)) {
+    public void testOrderCreation() {
+
+        if (useTopButton) {
             mainPage.clickOrderButtonTop();
         } else {
             mainPage.clickOrderButtonBottom();
         }
 
-        orderPage.fillFirstPage(name, surname, address, metroStation, phone);
+        orderPage.fillFirstPage(firstName, lastName, address, metro, phone);
         orderPage.fillSecondPage(date, rentalPeriod, color, comment);
         orderPage.confirmOrder();
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//div[contains(@class, 'Order_Modal')]")
+        ));
+
+             wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.xpath("//div[contains(@class, 'Order_ModalHeader')]"),
+                "Заказ оформлен"
+        ));
+
 
         assertTrue("Заказ должен быть успешно оформлен", orderPage.isOrderSuccess());
     }
 
     @After
     public void tearDown() {
-        WebDriverConfig.quitDriver();
+        if (driver != null) {
+            driver.quit();
+        }
     }
 }

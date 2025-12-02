@@ -56,9 +56,7 @@ public class MainPage {
     public void clickQuestion(int index) {
         WebElement question = wait.until(ExpectedConditions.elementToBeClickable(questionLocators[index]));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", question);
-        try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-        question.click();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(answerLocators[index]));
+        wait.until(ExpectedConditions.elementToBeClickable(question)).click(); // ← ТЕПЕРЬ ЕСТЬ .click()!
     }
 
     public String getAnswerText(int index) {

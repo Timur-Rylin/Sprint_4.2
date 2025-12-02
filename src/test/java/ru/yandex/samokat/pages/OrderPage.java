@@ -14,6 +14,10 @@ public class OrderPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
+    private final By modalWindowLocator = By.xpath("//div[contains(@class, 'Order_Modal')]");
+    private final By successModalLocator = By.xpath("//div[contains(@class, 'Order_Modal')]//div[text()='Заказ оформлен']");
+
+
     private final By nameInput = By.xpath("//input[@placeholder='* Имя']");
     private final By surnameInput = By.xpath("//input[@placeholder='* Фамилия']");
     private final By addressInput = By.xpath("//input[@placeholder='* Адрес: куда привезти заказ']");
@@ -126,8 +130,7 @@ public class OrderPage {
             wait.until(ExpectedConditions.visibilityOfElementLocated(confirmOrderButton));
         } catch (Exception e1) {
             try {
-                wait.until(ExpectedConditions.visibilityOfElementLocated(
-                        By.xpath("//div[contains(@class, 'Order_Modal')]")));
+                wait.until(ExpectedConditions.visibilityOfElementLocated(modalWindowLocator));
             } catch (Exception e2) {
             }
         }

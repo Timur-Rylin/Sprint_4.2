@@ -55,6 +55,8 @@ public class NavigationTest {
 
     @After
     public void tearDown() {
-        WebDriverConfig.quitDriver();
+        if (driver != null) {
+            driver.quit();
+        }
     }
 }
