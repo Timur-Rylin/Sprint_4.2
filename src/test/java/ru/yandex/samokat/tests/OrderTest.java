@@ -6,10 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.By;
-import java.time.Duration;
 import ru.yandex.samokat.config.WebDriverConfig;
 import ru.yandex.samokat.pages.OrderPage;
 import ru.yandex.samokat.pages.MainPage;
@@ -56,7 +52,7 @@ public class OrderTest {
     @Parameterized.Parameters(name = "Заказ: {0} {1} (кнопка: {9})")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                  {"Иван", "Иванов", "ул. Ленина, 1", "Сокольники", "+79991234567",
+                {"Иван", "Иванов", "ул. Ленина, 1", "Сокольники", "+79991234567",
                         "15.12.2024", "сутки", "black", "Позвонить за час", true},
                 {"Мария", "Петрова", "пр. Мира, 25", "Черкизовская", "+79997654321",
                         "20.12.2024", "двое суток", "grey", "Оставить у двери", false}
@@ -81,21 +77,13 @@ public class OrderTest {
             mainPage.clickOrderButtonBottom();
         }
 
+
         orderPage.fillFirstPage(firstName, lastName, address, metro, phone);
         orderPage.fillSecondPage(date, rentalPeriod, color, comment);
         orderPage.confirmOrder();
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//div[contains(@class, 'Order_Modal')]")
-        ));
-
-             wait.until(ExpectedConditions.textToBePresentInElementLocated(
-                By.xpath("//div[contains(@class, 'Order_ModalHeader')]"),
-                "Заказ оформлен"
-        ));
+        orderPage.waitForOrderSuccessModal();
 
 
         assertTrue("Заказ должен быть успешно оформлен", orderPage.isOrderSuccess());
